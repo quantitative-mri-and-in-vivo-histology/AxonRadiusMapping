@@ -1,4 +1,4 @@
-function [r, beta]  = getAxonRadius(delta, Delta, g, y, model)
+function [r, beta]  = getAxonRadius(delta, Delta, g, y, model, D0)
 
 
     % "getAxonRadius": Estimate the axon radius from multi-shell diffusion
@@ -42,28 +42,26 @@ function [r, beta]  = getAxonRadius(delta, Delta, g, y, model)
     
   
     start = [sqrt(4*pi)*rand(), 1.5+2*rand()];
-    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, model),start,[0 0],[sqrt(4*pi) 5],options);
+    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, model, D0),start,[0 0],[sqrt(4*pi) 5],options);
     
     beta = pars(1);
     r = pars(2);
 
 end
 
-function [E, J] = residuals(pars, X, y, model)
+function [E, J] = residuals(pars, X, y, model, D0)
     delta = X(:, 1);
     Delta = X(:, 2);
     g = X(:, 3);
     
-    [shat, dshat] = AxonDiameterFWD(delta, Delta, g, pars, model); 
+    [shat, dshat] = AxonDiameterFWD(delta, Delta, g, pars, model, D0); 
     E = shat(:) - y(:);
     J = dshat;
     
 end
 
-function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model)
+function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model, D0)
     
-    % read parameters with fixed D0
-    D0 = 2.5; 
     gyroMagnRatio =  267.513*10^(-6);
     beta = pars(1);
     r = pars(2);
