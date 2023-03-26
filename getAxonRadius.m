@@ -29,6 +29,7 @@ function [r, beta]  = getAxonRadius(delta, Delta, g, y, model, D0)
     if ~exist('model', 'var')
         model = 'VanGelderen';
     end
+
         
     
     options = optimset('lsqnonlin'); 
@@ -41,9 +42,14 @@ function [r, beta]  = getAxonRadius(delta, Delta, g, y, model, D0)
     
     
   
+    % Random initial guess seems to work well for Neuman, but not for van
+    % Gelderen model, so we use the Neumann results as initial guesses for
+    % the van Gelderen model
     start = [sqrt(4*pi)*rand(), 1.5+2*rand()];
-    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, model, D0),start,[0 0],[sqrt(4*pi) 5],options);
-    
+    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'Neumann'),start,[0 0],[sqrt(4*pi) 5],options);
+    if strcmp(model,'VanGelderen')
+        pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'VanGelderen'),pars,[0 0],[sqrt(4*pi) 5],options);
+    end
     beta = pars(1);
     r = pars(2);
 
@@ -73,7 +79,7 @@ function [s, ds] = AxonDiameterFWD(delta, Delta, g, pars, model, D0)
 
     % Forward model
     switch model
-        case 'Neumann'
+        case 'Neuman'
             s = beta*exp(-(7/48)*q.^2.*delta*r^4/D0)./sqrt(b);
             ds_dbeta = exp(-(7/48)*q.^2.*delta*r^4/D0) ./ sqrt(b);    
             ds_dr = beta ./ sqrt(b) .* exp(-(7/48)*q.^2.*delta*r^4/D0) .*(-(7/12)*q.^2.*delta*r^3/D0);
