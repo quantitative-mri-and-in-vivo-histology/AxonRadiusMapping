@@ -46,9 +46,9 @@ function [r, beta]  = getAxonRadius(delta, Delta, g, y, model, D0)
     % Gelderen model, so we use the Neumann results as initial guesses for
     % the van Gelderen model
     start = [sqrt(4*pi)*rand(), 1.5+2*rand()];
-    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'Neumann'),start,[0 0],[sqrt(4*pi) 5],options);
+    pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'Neuman', D0),start,[0 0],[sqrt(4*pi) 5],options);
     if strcmp(model,'VanGelderen')
-        pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'VanGelderen'),pars,[0 0],[sqrt(4*pi) 5],options);
+        pars = lsqnonlin(@(x)residuals(x, [delta(:), Delta(:), g(:)], y, 'VanGelderen', D0),pars,[0 0],[sqrt(4*pi) 5],options);
     end
     beta = pars(1);
     r = pars(2);
